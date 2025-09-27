@@ -1,0 +1,59 @@
+# Project Overview
+
+This is a personal book tracking web app, similar to Goodreads, built with Next.js 14+ (App Router) and TypeScript. It focuses on individual use with no community features. Core functionality includes:
+
+- User authentication (email/password or OAuth via Supabase).
+- Search books by title using Google Books API (store API key in .env.local).
+- Add books to "To-Read" or "Completed" lists, stored in Supabase.
+- For completed books: add reviews, 1-5 star ratings, and a feature-rich notes section.
+- Notes section (main focus): rich text editing (React Quill), chapter/section organization, quotes/highlights with citations, tagging, note search, export as Markdown/PDF if feasible.
+- UI: Clean, minimalistic, using Shadcn UI components and Tailwind CSS.
+
+# Tech Stack
+
+- Framework: Next.js 14+ (App Router)
+- Language: TypeScript (strict typing)
+- UI: Shadcn UI (Button, Card, Input, Select, Textarea, Accordion, etc.)
+- Database/Backend: Supabase (auth, data storage for books, user lists, reviews, ratings, notes)
+- ORM: Drizzle ORM for database interactions
+- Actions: Use Next.js server actions for all Supabase/Drizzle operations (no API routes)
+- Dependencies: next, react, typescript, @supabase/supabase-js, drizzle-orm, react-quill, @tanstack/react-query (optional for data fetching), shadcn-ui
+- Package Manager: pnpm
+- Environment: .env.local with SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_BOOKS_API_KEY
+- Forms: React Hook Form with Zod for validation
+- Styling: Tailwind CSS (via Shadcn)
+
+# Coding Conventions
+
+- Use TypeScript with strict typing for all components, hooks, and utils.
+- Use Shadcn UI components for all UI elements; avoid custom CSS unless necessary.
+- Use Drizzle ORM for all database queries; interact with Supabase via server actions.
+- Validate all forms with Zod and React Hook Form.
+- Prioritize real-time or on-blur saving for notes to prevent data loss.
+- Keep the app simple: no community features, recommendations, or stats.
+- Ensure responsiveness and accessibility (use ARIA attributes where needed).
+- Handle loading states and errors; redirect unauthenticated users to login.
+- Store minimal book data in Supabase (id, title, author, cover_url, description) to avoid redundancy.
+
+# Notes Feature Focus
+
+- Prioritize enhancements to the notes system: make it rich, user-friendly, and robust.
+- Support rich text (React Quill), chapter/section organization (collapsible or tabs), quotes/highlights with citations, tagging, and note search.
+- Allow Markdown/PDF export if feasible without heavy dependencies.
+
+# Project Structure
+
+- /app: Pages and layouts (root layout, dashboard, book details)
+- /components: Reusable UI (BookCard, NotesEditor)
+- /lib: Utils, Supabase/Drizzle setup, API helpers
+- /types: TypeScript types for books, users, etc.
+- /drizzle: Schema and migrations for Drizzle ORM
+- .env.local: Environment variables
+- package.json: Dependencies and scripts
+
+# Development Notes
+
+- Use `pnpm install` and `pnpm dlx shadcn-ui@latest init` to set up.
+- Run with `pnpm dev`.
+- Test for basic functionality; add comments for potential unit tests.
+- Keep Google Books API calls lightweight; cache results if possible.
