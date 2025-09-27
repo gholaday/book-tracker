@@ -4,54 +4,56 @@ import type { Book, BookCardProps, BookListType } from "@/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { addBookToList, removeBookFromList } from "@/lib/actions/books";
-import { useState } from "react";
+import StarRating from "@/components/ui/star-rating";
+import BookActions from "./BookActions";
+import { useBookActions } from "@/hooks/useBookActions";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Plus, Minus, Eye } from "lucide-react";
+import { Eye, FileText } from "lucide-react";
 
-export default function BookCard({
+const BookCard = function BookCard({
   book,
   showActions = true,
   onAddToList,
   onRemoveFromList,
   currentListType,
+  userRating = 0,
+  addedAt,
 }: BookCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentRating, setCurrentRating] = useState(userRating);
   const router = useRouter();
+  const { handleRatingChange } = useBookActions();
 
-  const handleAddToList = async (listType: BookListType) => {
-    setIsLoading(true);
-    try {
-      await addBookToList(book.id, listType);
-      onAddToList?.(book, listType);
-    } catch (error) {
-      console.error("Error adding book to list:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const formatDate = (date: string | Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
-  const handleRemoveFromList = async () => {
-    setIsLoading(true);
-    try {
-      await removeBookFromList(book.id);
-      onRemoveFromList?.(book.id);
-    } catch (error) {
-      console.error("Error removing book from list:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    setCurrentRating(userRating);
+  }, [userRating]);
 
   const handleViewDetails = () => {
     router.push(`/books/${book.id}`);
   };
 
+  const handleViewNotes = () => {
+    router.push(`/books/${book.id}#notes`);
+  };
+
+  const handleRating = async (rating: number) => {
+    setCurrentRating(rating);
+    await handleRatingChange(book, rating);
+  };
+
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex gap-4">
+      <CardHeader>
+        <div className="flex gap-2">
           {book.cover_url && (
             <div className="flex-shrink-0">
               <Image
@@ -71,24 +73,38 @@ export default function BookCard({
               {book.authors.join(", ")}
             </p>
             {book.published_date && (
-              <p className="text-xs text-muted-foreground">
-                {book.published_date}
+              <p className="text-xs text-muted-foreground mb-1">
+                Published: {book.published_date}
               </p>
             )}
+            {addedAt && (
+              <p className="text-xs text-muted-foreground mb-2">
+                Added: {formatDate(addedAt)}
+              </p>
+            )}
+            <div className="flex justify-start">
+              <StarRating
+                rating={currentRating}
+                onRatingChange={handleRating}
+                size="sm"
+                interactive={true}
+              />
+            </div>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col justify-between">
         {book.description && (
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-            {book.description}
-          </p>
+          <div
+            className="text-sm text-muted-foreground line-clamp-5 mb-4"
+            dangerouslySetInnerHTML={{ __html: book.description }}
+          />
         )}
 
         {book.categories && book.categories.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-4">
-            {book.categories.slice(0, 3).map((category) => (
+            {book.categories.slice(0, 1).map((category) => (
               <Badge key={category} variant="secondary" className="text-xs">
                 {category}
               </Badge>
@@ -97,55 +113,42 @@ export default function BookCard({
         )}
 
         {showActions && (
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleViewDetails}
-              className="flex-1"
-            >
-              <Eye className="w-4 h-4 mr-1" />
-              View
-            </Button>
-
-            {currentListType ? (
+          <div className="space-y-2">
+            <div className="flex gap-2">
               <Button
-                variant="destructive"
+                variant="outline"
                 size="sm"
-                onClick={handleRemoveFromList}
-                disabled={isLoading}
+                onClick={handleViewDetails}
                 className="flex-1"
               >
-                <Minus className="w-4 h-4 mr-1" />
-                Remove
+                <Eye className="w-4 h-4 mr-1" />
+                View
               </Button>
-            ) : (
-              <>
+
+              {currentListType && (
                 <Button
-                  variant="default"
+                  variant="outline"
                   size="sm"
-                  onClick={() => handleAddToList("to-read")}
-                  disabled={isLoading}
+                  onClick={handleViewNotes}
                   className="flex-1"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  To Read
+                  <FileText className="w-4 h-4 mr-1" />
+                  Notes
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleAddToList("completed")}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Completed
-                </Button>
-              </>
-            )}
+              )}
+            </div>
+
+            <BookActions
+              book={book}
+              currentListType={currentListType}
+              onAddToList={onAddToList}
+              onRemoveFromList={onRemoveFromList}
+            />
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
+export default BookCard;

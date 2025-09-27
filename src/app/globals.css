@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -135,4 +135,12 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+.ql-container {
+  height: 280px !important;
+}
+
+.DropdownMenuContent {
+  width: var(--radix-dropdown-menu-trigger-width); /* Matches the width of the trigger */
 }

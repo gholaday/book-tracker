@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toaster";
 import { Search, Loader2 } from "lucide-react";
 import { searchBooksAction } from "@/lib/actions/books";
 import type { Book } from "@/types";
@@ -18,6 +19,7 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
   const [results, setResults] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const { addToast } = useToast();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,19 +31,76 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
     try {
       const searchResults = await searchBooksAction(query);
       setResults(searchResults);
+
+      if (searchResults.length === 0) {
+        addToast({
+          title: "No Results",
+          description: "No books found for your search. Try different keywords.",
+          variant: "default",
+          duration: 4000,
+        });
+      } else {
+        addToast({
+          title: "Search Complete",
+          description: `Found ${searchResults.length} book${searchResults.length > 1 ? 's' : ''}`,
+          variant: "success",
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
+      addToast({
+        title: "Search Error",
+        description: "Failed to search books. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBookAdded = () => {
+  const handleBookAdded = useCallback((book: Book, listType: string) => {
     // Could show a toast notification here
-    console.log("Book added to list");
+    console.log("Book added to list:", book.title, listType);
     onBookAdded?.(); // Notify parent component
-  };
+  }, [onBookAdded]);
+
+  const searchResultsContent = useMemo(() => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      );
+    }
+
+    if (results.length > 0) {
+      return (
+        <>
+          <h3 className="text-lg font-semibold">
+            Search Results ({results.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {results.map((book) => (
+              <BookCard
+                key={book.id}
+                book={book}
+                onAddToList={handleBookAdded}
+              />
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No books found. Try a different search term.
+      </div>
+    );
+  }, [isLoading, results, handleBookAdded]);
 
   return (
     <div className="space-y-6">
@@ -71,30 +130,7 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
 
       {hasSearched && (
         <div className="space-y-4">
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin" />
-            </div>
-          ) : results.length > 0 ? (
-            <>
-              <h3 className="text-lg font-semibold">
-                Search Results ({results.length})
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {results.map((book) => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    onAddToList={handleBookAdded}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No books found. Try a different search term.
-            </div>
-          )}
+          {searchResultsContent}
         </div>
       )}
     </div>

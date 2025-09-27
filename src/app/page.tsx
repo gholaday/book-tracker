@@ -56,7 +56,7 @@ export default async function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Organize books into "To Read" and "Completed" lists
+                Organize books into "Want to Read" and "Completed" lists
               </CardDescription>
             </CardContent>
           </Card>

@@ -38,7 +38,7 @@ export interface Book {
 }
 
 // User book list types
-export type BookListType = "to-read" | "completed";
+export type BookListType = 'to-read' | 'reading' | 'completed';
 
 export interface UserBook {
   id: string;
@@ -47,6 +47,7 @@ export interface UserBook {
   list_type: BookListType;
   added_at: string | Date;
   book?: Book;
+  user_rating?: number | null;
 }
 
 // Review and rating types
@@ -147,6 +148,8 @@ export interface BookCardProps {
   onAddToList?: (book: Book, listType: BookListType) => void;
   onRemoveFromList?: (bookId: string) => void;
   currentListType?: BookListType;
+  userRating?: number;
+  addedAt?: string | Date;
 }
 
 export interface NotesEditorProps {
