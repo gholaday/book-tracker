@@ -14,8 +14,6 @@ interface BookListProps {
   sortOrder: "asc" | "desc";
   onSortByChange: (value: string) => void;
   onSortOrderChange: () => void;
-  onBookRemoved: (bookId: string) => void;
-  onBookStatusChange: (book: any, newStatus: string) => void;
   emptyMessage: string;
   emptyDescription: string;
 }
@@ -28,8 +26,6 @@ export default function BookList({
   sortOrder,
   onSortByChange,
   onSortOrderChange,
-  onBookRemoved,
-  onBookStatusChange,
   emptyMessage,
   emptyDescription,
 }: BookListProps) {
@@ -82,12 +78,7 @@ export default function BookList({
             {filteredBooks.map((userBook) => (
               <BookCard
                 key={userBook.id}
-                book={userBook.book!}
-                currentListType={userBook.list_type}
-                userRating={userBook.user_rating || 0}
-                addedAt={userBook.added_at}
-                onRemoveFromList={onBookRemoved}
-                onAddToList={onBookStatusChange}
+                userBook={userBook}
               />
             ))}
           </div>

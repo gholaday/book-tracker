@@ -4,35 +4,29 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserBooks } from "@/lib/actions/books";
 import { UserBook } from "@/types";
 import BookList from "./BookList";
 import { LogOut, BookOpen, CheckCircle, Plus } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 import { useRouter } from "next/navigation";
 import BookSearch from "./BookSearch";
+import { useBookContext } from "@/contexts/BookContext";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("search");
-  const [allBooks, setAllBooks] = useState<UserBook[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const router = useRouter();
 
-  const loadUserBooks = async () => {
-    try {
-      const userBooks = await getUserBooks();
-      setAllBooks(userBooks);
-    } catch (error) {
-      console.error("Error loading user books:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    isLoading,
+    toReadBooks,
+    readingBooks,
+    completedBooks,
+    loadUserBooks } = useBookContext();
 
   useEffect(() => {
-    loadUserBooks();
+    loadUserBooks(true);
   }, []);
 
   const sortBooks = (books: UserBook[]) => {
@@ -67,43 +61,18 @@ export default function Dashboard() {
     });
   };
 
-  // Use useMemo to filter and sort books by type
-  const toReadBooks = useMemo(() =>
-    sortBooks(allBooks.filter((book) => book.list_type === "to-read")),
-    [allBooks, sortBy, sortOrder]
-  );
-
-  const readingBooks = useMemo(() =>
-    sortBooks(allBooks.filter((book) => book.list_type === "reading")),
-    [allBooks, sortBy, sortOrder]
-  );
-
-  const completedBooks = useMemo(() =>
-    sortBooks(allBooks.filter((book) => book.list_type === "completed")),
-    [allBooks, sortBy, sortOrder]
-  );
-
-  const handleBookRemoved = (bookId: string) => {
-    setAllBooks((prev) => prev.filter((book) => book.book_id !== bookId));
-  };
-
-  const handleBookAdded = () => {
-    loadUserBooks(); // Reload the lists
-  };
-
-  const handleBookStatusChange = (book: any, newStatus: string) => {
-    setAllBooks((prev) =>
-      prev.map((userBook) =>
-        userBook.book_id === book.id
-          ? { ...userBook, list_type: newStatus as "to-read" | "reading" | "completed" }
-          : userBook
-      )
-    );
-  };
+  // Apply sorting to context books
+  const sortedToReadBooks = useMemo(() => sortBooks(toReadBooks), [toReadBooks, sortBy, sortOrder]);
+  const sortedReadingBooks = useMemo(() => sortBooks(readingBooks), [readingBooks, sortBy, sortOrder]);
+  const sortedCompletedBooks = useMemo(() => sortBooks(completedBooks), [completedBooks, sortBy, sortOrder]);
 
   const handleSignOut = async () => {
     await signOut();
     router.push("/auth/login");
+  };
+
+  const handleBookAdded = () => {
+    setActiveTab("to-read");
   };
 
   if (isLoading) {
@@ -167,15 +136,13 @@ export default function Dashboard() {
 
           <TabsContent value="to-read" className="space-y-6">
             <BookList
-              books={toReadBooks}
+              books={sortedToReadBooks}
               title="Want to Read"
               icon={<BookOpen className="w-5 h-5" />}
               sortBy={sortBy}
               sortOrder={sortOrder}
               onSortByChange={setSortBy}
               onSortOrderChange={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              onBookRemoved={handleBookRemoved}
-              onBookStatusChange={handleBookStatusChange}
               emptyMessage="No books in your want to read list"
               emptyDescription="Search for books and add them to get started!"
             />
@@ -183,15 +150,13 @@ export default function Dashboard() {
 
           <TabsContent value="reading" className="space-y-6">
             <BookList
-              books={readingBooks}
+              books={sortedReadingBooks}
               title="Currently Reading"
               icon={<BookOpen className="w-5 h-5" />}
               sortBy={sortBy}
               sortOrder={sortOrder}
               onSortByChange={setSortBy}
               onSortOrderChange={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              onBookRemoved={handleBookRemoved}
-              onBookStatusChange={handleBookStatusChange}
               emptyMessage="No books currently being read"
               emptyDescription="Start reading a book from your want to read list!"
             />
@@ -199,15 +164,13 @@ export default function Dashboard() {
 
           <TabsContent value="completed" className="space-y-6">
             <BookList
-              books={completedBooks}
+              books={sortedCompletedBooks}
               title="Completed Books"
               icon={<CheckCircle className="w-5 h-5" />}
               sortBy={sortBy}
               sortOrder={sortOrder}
               onSortByChange={setSortBy}
               onSortOrderChange={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              onBookRemoved={handleBookRemoved}
-              onBookStatusChange={handleBookStatusChange}
               emptyMessage="No completed books yet"
               emptyDescription="Mark books as completed when you finish reading them!"
             />

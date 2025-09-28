@@ -56,4 +56,5 @@ This is a personal book tracking web app, similar to Goodreads, built with Next.
 - Use `pnpm install` and `pnpm dlx shadcn-ui@latest init` to set up.
 - Run with `pnpm dev`.
 - Dont run a build after making changes.
+- Dont test changes, just make sure it passes the linter
 - Keep Google Books API calls lightweight; cache results if possible.

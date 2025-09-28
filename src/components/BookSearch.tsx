@@ -21,6 +21,7 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
   const [hasSearched, setHasSearched] = useState(false);
   const { addToast } = useToast();
 
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -61,10 +62,9 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
     }
   };
 
-  const handleBookAdded = useCallback((book: Book, listType: string) => {
-    // Could show a toast notification here
-    console.log("Book added to list:", book.title, listType);
-    onBookAdded?.(); // Notify parent component
+  const handleBookAdded = useCallback(() => {
+    // Notify parent component that a book was added
+    onBookAdded?.();
   }, [onBookAdded]);
 
   const searchResultsContent = useMemo(() => {
@@ -83,13 +83,26 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
             Search Results ({results.length})
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {results.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                onAddToList={handleBookAdded}
-              />
-            ))}
+            {results.map((book) => {
+              // Create a userBook-like object for search results
+              const userBook = {
+                id: `search-${book.id}`,
+                user_id: '',
+                book_id: book.id,
+                list_type: null as any,
+                added_at: new Date(),
+                book: book,
+                user_rating: null
+              };
+
+              return (
+                <BookCard
+                  key={book.id}
+                  userBook={userBook}
+                  showActions={true}
+                />
+              );
+            })}
           </div>
         </>
       );

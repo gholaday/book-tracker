@@ -6,24 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import StarRating from "@/components/ui/star-rating";
 import BookActions from "./BookActions";
-import { useBookActions } from "@/hooks/useBookActions";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, FileText } from "lucide-react";
+import { useBookContext } from "@/contexts/BookContext";
 
 const BookCard = function BookCard({
-  book,
+  userBook,
   showActions = true,
-  onAddToList,
-  onRemoveFromList,
-  currentListType,
-  userRating = 0,
-  addedAt,
 }: BookCardProps) {
-  const [currentRating, setCurrentRating] = useState(userRating);
+  const [currentRating, setCurrentRating] = useState(userBook.user_rating || 0);
   const router = useRouter();
-  const { handleRatingChange } = useBookActions();
+  const { updateBookRating } = useBookContext();
+
+  const book = userBook.book!;
+  const currentListType = userBook.list_type;
+  const addedAt = userBook.added_at;
 
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -34,8 +33,8 @@ const BookCard = function BookCard({
   };
 
   useEffect(() => {
-    setCurrentRating(userRating);
-  }, [userRating]);
+    setCurrentRating(userBook.user_rating || 0);
+  }, [userBook.user_rating]);
 
   const handleViewDetails = () => {
     router.push(`/books/${book.id}`);
@@ -47,7 +46,7 @@ const BookCard = function BookCard({
 
   const handleRating = async (rating: number) => {
     setCurrentRating(rating);
-    await handleRatingChange(book, rating);
+    await updateBookRating(book, rating);
   };
 
   return (
@@ -141,8 +140,6 @@ const BookCard = function BookCard({
             <BookActions
               book={book}
               currentListType={currentListType}
-              onAddToList={onAddToList}
-              onRemoveFromList={onRemoveFromList}
             />
           </div>
         )}

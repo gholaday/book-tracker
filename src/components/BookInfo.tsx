@@ -115,9 +115,6 @@ export default function BookInfo({
           <BookActions
             book={book}
             currentListType={currentListType}
-            onAddToList={onAddToList}
-            onRemoveFromList={onRemoveFromList}
-            onStatusChange={onStatusChange}
             className="mb-4"
           />
 

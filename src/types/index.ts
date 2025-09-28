@@ -143,13 +143,8 @@ export interface NotesExport {
 
 // Component props types
 export interface BookCardProps {
-  book: Book;
+  userBook: UserBook;
   showActions?: boolean;
-  onAddToList?: (book: Book, listType: BookListType) => void;
-  onRemoveFromList?: (bookId: string) => void;
-  currentListType?: BookListType;
-  userRating?: number;
-  addedAt?: string | Date;
 }
 
 export interface NotesEditorProps {

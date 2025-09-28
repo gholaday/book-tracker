@@ -3,37 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BookOpen, CheckCircle, MoreHorizontal, Trash2, Calendar, Plus } from "lucide-react";
-import { useBookActions } from "@/hooks/useBookActions";
+import { useBookContext } from "@/contexts/BookContext";
 import { memo } from "react";
 
 interface BookActionsProps {
   book: Book;
   currentListType?: BookListType | null;
-  onAddToList?: (book: Book, listType: BookListType) => void;
-  onRemoveFromList?: (bookId: string) => void;
-  onStatusChange?: (book: Book, newStatus: BookListType) => void;
   className?: string;
 }
 
 const BookActions = memo(function BookActions({
   book,
   currentListType,
-  onAddToList,
-  onRemoveFromList,
-  onStatusChange,
   className = "",
 }: BookActionsProps) {
-  const { isLoading, handleAddToList, handleRemoveFromList } = useBookActions();
+  const { isActionLoading, addBookToList, removeBookFromList } = useBookContext();
 
   const handleStatusChange = async (newStatus: BookListType) => {
-    await handleAddToList(book, newStatus, (book, listType) => {
-      onAddToList?.(book, listType);
-      onStatusChange?.(book, listType);
-    });
+    await addBookToList(book, newStatus);
   };
 
   const handleRemove = async () => {
-    await handleRemoveFromList(book.id, book.title, onRemoveFromList);
+    await removeBookFromList(book.id);
   };
 
   if (!currentListType) {
@@ -41,7 +32,7 @@ const BookActions = memo(function BookActions({
       <div className={className}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="w-full" size="sm" disabled={isLoading}>
+            <Button className="w-full" size="sm" disabled={isActionLoading}>
               <Plus className="w-4 h-4 mr-2" />
               Add
             </Button>
@@ -69,7 +60,7 @@ const BookActions = memo(function BookActions({
     <div className={`space-y-2 flex justify-between ${className}`}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" disabled={isLoading} className="w-full">
+          <Button variant="outline" size="sm" disabled={isActionLoading} className="w-full">
             {currentListType === 'completed' ? (
               <CheckCircle className="w-4 h-4 mr-2" />
             ) : currentListType === 'reading' ? (

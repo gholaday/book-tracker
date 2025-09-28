@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toaster";
 import BookInfo from "./BookInfo";
-import { useBookActions } from "@/hooks/useBookActions";
+import { useBookContext } from "@/contexts/BookContext";
 import dynamic from "next/dynamic";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
@@ -41,15 +41,22 @@ export default function BookDetails({
   const [showNotes, setShowNotes] = useState(initialNotes.length > 0);
   const [reviews, setReviews] = useState(initialReviews);
   const [notes, setNotes] = useState(initialNotes);
-  const [currentListType, setCurrentListType] = useState<BookListType | null>(null);
-  const [addedAt, setAddedAt] = useState<string | Date | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { addToast } = useToast();
-  const { handleAddToList, handleRemoveFromList, handleRatingChange } = useBookActions();
-
-  const [userRating, setUserRating] = useState(0);
+  const {
+    currentListType,
+    addedAt,
+    userRating,
+    setCurrentBook,
+    setCurrentListType,
+    setAddedAt,
+    setUserRating,
+    addBookToList,
+    removeBookFromList,
+    updateBookRating
+  } = useBookContext();
 
   // Note form state
   const [noteTitle, setNoteTitle] = useState("");
@@ -61,26 +68,15 @@ export default function BookDetails({
   const userReview = reviews.find(review => review.user_id);
   const userRatingValue = userReview?.rating || 0;
 
-  // Check user's book status and rating on component mount
+  // Set current book and load its data
   useEffect(() => {
-    const checkUserBookStatus = async () => {
-      try {
-        const userBooks = await getUserBooks();
-        const userBook = userBooks.find(ub => ub.book_id === book.id);
-        setCurrentListType(userBook?.list_type || null);
-        setAddedAt(userBook?.added_at || null);
+    setCurrentBook(book);
 
-        // Set user rating from existing review
-        if (userReview) {
-          setUserRating(userReview.rating);
-        }
-      } catch (error) {
-        console.error("Error checking user book status:", error);
-      }
-    };
-
-    checkUserBookStatus();
-  }, [book.id, userReview]);
+    // Set user rating from existing review
+    if (userReview) {
+      setUserRating(userReview.rating);
+    }
+  }, [book, userReview, setCurrentBook, setUserRating]);
 
   // Update userRating when userReview changes
   useEffect(() => {
@@ -91,21 +87,21 @@ export default function BookDetails({
     }
   }, [userReview]);
 
+  const handleStatusChange = async (book: Book, newStatus: string) => {
+    await addBookToList(book, newStatus as BookListType);
+  };
+
+  // Wrapper functions to match BookInfo component expectations
   const handleAddToListWrapper = async (book: Book, listType: string) => {
-    await handleAddToList(book, listType as BookListType, () => setCurrentListType(listType as BookListType));
+    await addBookToList(book, listType as BookListType);
   };
 
   const handleRemoveFromListWrapper = async (bookId: string) => {
-    await handleRemoveFromList(bookId, book.title, () => setCurrentListType(null));
+    await removeBookFromList(bookId);
   };
 
   const handleRatingChangeWrapper = async (rating: number) => {
-    setUserRating(rating);
-    await handleRatingChange(book, rating);
-  };
-
-  const handleStatusChange = async (book: Book, newStatus: string) => {
-    await handleAddToListWrapper(book, newStatus);
+    await updateBookRating(book, rating);
   };
 
 
