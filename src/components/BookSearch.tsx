@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toaster";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, BookOpen } from "lucide-react";
 import { searchBooksAction } from "@/lib/actions/books";
 import type { Book } from "@/types";
 import BookCard from "./BookCard";
@@ -132,7 +132,7 @@ export default function BookSearch({ onBookAdded }: BookSearchProps) {
             />
             <Button type="submit" disabled={isLoading || !query.trim()}>
               {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <BookOpen className="w-4 h-4 animate-spin text-white" />
               ) : (
                 <Search className="w-4 h-4" />
               )}

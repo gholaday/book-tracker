@@ -1,4 +1,4 @@
-import { Book } from "@/types";
+import { Book, BookListType } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import StarRating from "@/components/ui/star-rating";
@@ -10,12 +10,12 @@ import { Calendar, Users, BookOpen } from "lucide-react";
 
 interface BookInfoProps {
   book: Book;
-  currentListType?: string | null;
+  currentListType?: BookListType | null;
   userRating?: number;
   addedAt?: string | Date | null;
-  onAddToList?: (book: Book, listType: string) => void;
+  onAddToList?: (book: Book, listType: BookListType) => void;
   onRemoveFromList?: (bookId: string) => void;
-  onStatusChange?: (book: Book, newStatus: string) => void;
+  onStatusChange?: (book: Book, newStatus: BookListType) => void;
   onRatingChange?: (rating: number) => void;
 }
 

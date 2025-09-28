@@ -19,6 +19,7 @@ interface BookContextType {
   currentListType: BookListType | null;
   userRating: number;
   addedAt: string | Date | null;
+  activeTab: string;
 
   // Actions
   loadUserBooks: (showLoading?: boolean) => Promise<void>;
@@ -30,6 +31,7 @@ interface BookContextType {
   setCurrentListType: (listType: BookListType | null) => void;
   setUserRating: (rating: number) => void;
   setAddedAt: (date: string | Date | null) => void;
+  setActiveTab: (tab: string) => void;
 
   // Computed values
   toReadBooks: UserBook[];
@@ -52,6 +54,7 @@ export function BookProvider({ children }: BookProviderProps) {
   const [currentListType, setCurrentListType] = useState<BookListType | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [addedAt, setAddedAt] = useState<string | Date | null>(null);
+  const [activeTab, setActiveTab] = useState("search");
 
   const { addToast } = useToast();
 
@@ -209,6 +212,7 @@ export function BookProvider({ children }: BookProviderProps) {
     currentListType,
     userRating,
     addedAt,
+    activeTab,
 
     // Actions
     loadUserBooks,
@@ -220,6 +224,7 @@ export function BookProvider({ children }: BookProviderProps) {
     setCurrentListType,
     setUserRating,
     setAddedAt,
+    setActiveTab,
 
     // Computed values
     toReadBooks,
